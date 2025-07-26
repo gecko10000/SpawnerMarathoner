@@ -14,7 +14,7 @@ class CommandHandler : MyKoinComponent {
 
     private val plugin: SpawnerMarathoner by inject()
 
-    fun register(plugin: SpawnerMarathoner) {
+    fun register() {
         plugin.lifecycleManager
             .registerEventHandler(LifecycleEvents.COMMANDS.newHandler(LifecycleEventHandler { event ->
                 CommandHandlerBrigadier.register(

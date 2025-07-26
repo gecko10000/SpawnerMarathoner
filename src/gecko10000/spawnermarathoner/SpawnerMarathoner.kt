@@ -18,7 +18,7 @@ class SpawnerMarathoner : JavaPlugin() {
     override fun onEnable() {
         MyKoinContext.init(this)
         SpawnerListeners()
-        CommandHandler().register(this)
+        CommandHandler().register()
     }
 
     fun reloadConfigs() {
