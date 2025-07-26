@@ -1,6 +1,8 @@
 package gecko10000.spawnermarathoner
 
 import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckolib.misc.Task
+import net.kyori.adventure.title.Title
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -9,9 +11,11 @@ import org.bukkit.entity.Player
 import org.bukkit.entity.WindCharge
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.ProjectileHitEvent
 import org.bukkit.util.Vector
 import org.koin.core.component.inject
+import java.util.*
 import kotlin.math.abs
 
 class SpawnerListeners : Listener, MyKoinComponent {
@@ -102,6 +106,34 @@ class SpawnerListeners : Listener, MyKoinComponent {
         }
         val result = intermediate
         moveSpawner(state, result)
+    }
+
+    private val confirmations = mutableMapOf<UUID, Pair<Task?, Block>>()
+
+    @EventHandler
+    private fun BlockBreakEvent.onBreakSpawner() {
+        if (this.block.type != Material.SPAWNER) return
+
+        val uuid = this.player.uniqueId
+        val awaitingConfirm = confirmations.remove(uuid)
+        // Confirmed
+        if (awaitingConfirm?.second == this.block) {
+            awaitingConfirm.first?.cancel()
+            return
+        }
+        val task = if (plugin.config.spawnerBreakConfirmationEnabled)
+            Task.syncDelayed(
+                { -> confirmations.remove(uuid) },
+                plugin.config.spawnerBreakConfirmationTimeoutTicks
+            ) else null
+        confirmations.put(uuid, task to this.block)
+        this.player.showTitle(
+            Title.title(
+                plugin.config.spawnerBreakConfirmationMessageTitle,
+                plugin.config.spawnerBreakConfirmationMessageSubtitle
+            )
+        )
+        this.isCancelled = true
     }
 
 }
