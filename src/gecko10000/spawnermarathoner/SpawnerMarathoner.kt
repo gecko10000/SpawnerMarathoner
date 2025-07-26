@@ -1,0 +1,28 @@
+package gecko10000.spawnermarathoner
+
+import gecko10000.geckoanvils.di.MyKoinContext
+import gecko10000.geckolib.config.YamlFileManager
+import gecko10000.spawnermarathoner.config.Config
+import org.bukkit.plugin.java.JavaPlugin
+
+class SpawnerMarathoner : JavaPlugin() {
+
+    private val configFile = YamlFileManager(
+        configDirectory = dataFolder,
+        initialValue = Config(),
+        serializer = Config.serializer(),
+    )
+    val config: Config
+        get() = configFile.value
+
+    override fun onEnable() {
+        MyKoinContext.init(this)
+        SpawnerListeners()
+        CommandHandler().register(this)
+    }
+
+    fun reloadConfigs() {
+        configFile.reload()
+    }
+
+}
