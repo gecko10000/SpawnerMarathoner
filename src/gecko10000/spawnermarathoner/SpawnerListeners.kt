@@ -1,6 +1,7 @@
 package gecko10000.spawnermarathoner
 
 import gecko10000.geckoanvils.di.MyKoinComponent
+import gecko10000.geckolib.extensions.toBlockFace
 import gecko10000.geckolib.misc.Task
 import net.kyori.adventure.title.Title
 import org.bukkit.Material
@@ -13,10 +14,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.entity.ProjectileHitEvent
-import org.bukkit.util.Vector
 import org.koin.core.component.inject
 import java.util.*
-import kotlin.math.abs
 
 class SpawnerListeners : Listener, MyKoinComponent {
 
@@ -29,19 +28,6 @@ class SpawnerListeners : Listener, MyKoinComponent {
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
         plugin.server.consoleSender.hasPermission(PUSH_DISTANCE_PERM_PREFIX) // to register with LP
-    }
-
-    private fun velocityToBlockFace(velocity: Vector): BlockFace {
-        val absX = abs(velocity.x)
-        val absY = abs(velocity.y)
-        val absZ = abs(velocity.z)
-        if (absY > absX && absY > absZ) {
-            return if (velocity.y >= 0) BlockFace.UP else BlockFace.DOWN
-        }
-        if (absX > absZ) {
-            return if (velocity.x >= 0) BlockFace.EAST else BlockFace.WEST
-        }
-        return if (velocity.z >= 0) BlockFace.SOUTH else BlockFace.NORTH
     }
 
     private val adjacentFaces = setOf(
@@ -94,7 +80,7 @@ class SpawnerListeners : Listener, MyKoinComponent {
         val state = block.getState(false)
         if (state !is CreatureSpawner) return
         val velocity = projectile.velocity
-        val direction = velocityToBlockFace(velocity)
+        val direction = velocity.toBlockFace()
         val distanceToTravel = getPushDistance(player)
         var intermediate = block
         for (i in 0..<distanceToTravel) {
