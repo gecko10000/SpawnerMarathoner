@@ -32,6 +32,7 @@ data class Config(
         Material.RAIL,
         Material.POWERED_RAIL
     ),
+    val mineExplosionPower: Float = 20f,
 ) {
     fun spawnerMinecartCustomName(entity: EntitySnapshot?) = MM.deserialize(
         spawnerMinecartCustomName,

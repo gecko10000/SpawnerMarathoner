@@ -5,7 +5,6 @@ import gecko10000.geckolib.misc.Task
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import net.kyori.adventure.title.Title
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -15,8 +14,11 @@ import org.bukkit.entity.EntityType
 import org.bukkit.entity.minecart.RideableMinecart
 import org.bukkit.entity.minecart.SpawnerMinecart
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.SpawnerSpawnEvent
 import org.bukkit.event.vehicle.VehicleBlockCollisionEvent
 import org.bukkit.event.vehicle.VehicleDestroyEvent
@@ -108,30 +110,30 @@ class SpawnerListeners : Listener, MyKoinComponent {
     private val confirmations = mutableMapOf<UUID, Pair<Task?, Block>>()
 
     // Shows a confirmation when breaking spawners.
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private fun BlockBreakEvent.onBreakSpawner() {
         if (this.block.type != Material.SPAWNER) return
+        if (this.player.hasPermission("spawnermarathoner.break.bypass")) return
+        explode(listOf(this.block))
+    }
 
-        val uuid = this.player.uniqueId
-        val awaitingConfirm = confirmations.remove(uuid)
-        // Confirmed
-        if (awaitingConfirm?.second == this.block) {
-            awaitingConfirm.first?.cancel()
-            return
+    private fun explode(blockList: List<Block>) {
+        val spawners = blockList.filter { it.type == Material.SPAWNER }
+        Task.syncDelayed { ->
+            spawners.forEach {
+                it.world.createExplosion(it.location.toCenterLocation(), plugin.config.mineExplosionPower)
+            }
         }
-        val task = if (plugin.config.spawnerBreakConfirmationEnabled)
-            Task.syncDelayed(
-                { -> confirmations.remove(uuid) },
-                plugin.config.spawnerBreakConfirmationTimeoutTicks
-            ) else null
-        confirmations.put(uuid, task to this.block)
-        this.player.showTitle(
-            Title.title(
-                plugin.config.spawnerBreakConfirmationMessageTitle,
-                plugin.config.spawnerBreakConfirmationMessageSubtitle
-            )
-        )
-        this.isCancelled = true
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    private fun BlockExplodeEvent.onExplode() {
+        explode(blockList())
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    private fun EntityExplodeEvent.onExplode() {
+        explode(blockList())
     }
 
     // Prevent spawning when there are multiple spawner minecarts close by.
