@@ -1,4 +1,4 @@
-package gecko10000.geckoanvils.di
+package gecko10000.spawnermarathoner.di
 
 import gecko10000.spawnermarathoner.SpawnerMarathoner
 import org.koin.core.Koin

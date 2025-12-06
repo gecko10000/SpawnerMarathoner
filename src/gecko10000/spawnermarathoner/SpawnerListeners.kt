@@ -1,7 +1,7 @@
 package gecko10000.spawnermarathoner
 
-import gecko10000.geckoanvils.di.MyKoinComponent
 import gecko10000.geckolib.misc.Task
+import gecko10000.spawnermarathoner.di.MyKoinComponent
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer

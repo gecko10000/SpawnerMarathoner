@@ -1,8 +1,8 @@
 package gecko10000.spawnermarathoner
 
-import gecko10000.geckoanvils.di.MyKoinContext
 import gecko10000.geckolib.config.YamlFileManager
 import gecko10000.spawnermarathoner.config.Config
+import gecko10000.spawnermarathoner.di.MyKoinContext
 import org.bukkit.plugin.java.JavaPlugin
 
 class SpawnerMarathoner : JavaPlugin() {
